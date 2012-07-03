@@ -15,6 +15,7 @@
 backup_path="/srv/backup/ldap"
 backup_filename="ldaptree.ldif"
 git_remote_origin=""
+restore="false"
 config_file=/etc/slapd-git-backup.cfg
 
 ## functions
@@ -86,6 +87,8 @@ do
 			exit ;;
 		c)
 			config_file="$OPTARG" ;;
+		r)
+			restore="true" ;;
 	esac
 done
 shift $(($OPTIND-1))
@@ -122,7 +125,21 @@ export GIT_DIR="${GIT_WORK_TREE}/.git"
 
 if [ ! -d "${GIT_DIR}" ]; then
     printf '>> info: %s does not seem to be a git repo, initializing\n' "${GIT_WORK_TREE}"
-    cd ${GIT_WORK_TREE} && git init .
+	if [ "${restore}" != "true" ]
+	then
+		cd ${GIT_WORK_TREE} && git init .
+	elif [ "${restore}" == "true" ]
+	then
+		[ "${git_remote_origin}" == "" ] && { printf '>> fatal: git_remote_origin needs to be set in restore mode'; exit 1; }
+		repo_base_path=${GIT_WORK_TREE%/*}
+		repo_name=${GIT_WORK_TREE##*/}
+		( cd "${repo_base_path}" && git clone "${git_remote_origin}" "${repo_name}" )
+	fi
+fi
+
+if [ "${restore}" == "true" ]; then
+	slapd_restore
+	exit $?
 fi
 
 git add "${backup_filename}"
