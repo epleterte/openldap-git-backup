@@ -70,15 +70,15 @@ if [ -f "${config_file}" ]; then
 	source <( egrep "^backup_path=|^backup_filename=|^git_remote_origin=" "${config_file}" )
 fi
 
-## cheap config 'verification'
-# by excluding git_remote_origin here, and thus allowing it to be empty, not pushing remotely is an option later on depending on this
+## 'sanity-check'
+# cheap config 'verification'
+# by excluding git_remote_origin here, we can check whether it's empty later on and skip pushing remotely if it is.
 for var in backup_path backup_filename;
 do
 	eval config_value=\$$var
 	[ ${config_value} == '' ] && { printf '>> fatal: config variable %s is unset!' "${var}"; exit 1; }
 done
 
-# 'sanity-check'
 [ -d "${backup_path}" ] || { printf '>> info: backup path %s does not exist, creating...\n' "${backup_path}"; mkdir -p "${backup_path}"; }
 is_bin service || exit 1
 is_bin slapcat || exit 1
