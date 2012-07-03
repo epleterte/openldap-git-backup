@@ -3,7 +3,7 @@ openldap-git-backup
 
 do git revision controlled backups of slapd/openldap-trees and push remotely
 
-
+<pre>
 slapd git backup - Christian Bryn 2012 <chr.bryn@gmail.com>
 do git revision controlled slapd backups and push remotely
 plays nicely with i.e. cgit (web)
@@ -31,3 +31,4 @@ Hints:
   * Distribute script with puppet, write config file using puppet 
     template. Realize slapd node names in cgit frontend node config.
 
+</pre>
