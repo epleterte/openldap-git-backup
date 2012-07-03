@@ -1,7 +1,7 @@
 openldap-git-backup
 ===================
 
-do git revision controlled backups of slapd/openldap-trees and push remotely
+do git revision controlled backups of slapd/openldap-trees and push remotely  
 will automatically create backup paths, initialize local git repo and configure a remote origin before pushing remotely.
 configuring git remote origin is optional - omitting this will make the script skip pushing remotely, a local git repo will still be kept.
 
