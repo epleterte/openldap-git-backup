@@ -15,6 +15,7 @@
 backup_path="/srv/backup/ldap"
 backup_filename="ldaptree.ldif"
 git_remote_origin=""
+restore="false"
 config_file=/etc/slapd-git-backup.cfg
 
 ## functions
@@ -52,6 +53,33 @@ EOF
 
 is_bin(){ which "${1}">/dev/null||{ printf '>> fatal: no "%s" command in PATH\n' "${1}"; return 1; }; return 0; }
 
+function slapd_stop() {
+	service slapd stop >/dev/null
+	trap "service slapd start >/dev/null" EXIT
+	pgrep -lf $(which slapd) >/dev/null && { printf '>> fatal: could not stop slapd, unable to perform backup\n'; return 1; }
+	return 0
+}
+
+function slapd_backup() {
+	## slapd backup
+	# backup routine: we perform a backup regardless of the git repo status
+	slapd_stop || exit 1
+	slapcat > "${backup_path}/${backup_filename}"
+}
+
+function slapd_restore() {
+	## this is destructive
+	is_bin slapadd || exit 1
+	slapd_stop || exit 1
+	#slapd
+	#cd $1 
+	[ -f "${backup_path}/${backup_filename}" ] || { printf '>> no ldif to restore in: %s' "${backup_path}/${backup_filename}"; return 1; }
+	rm -rf /var/lib/ldap/*
+	slapadd -l "${backup_path}/${backup_filename}"
+	chown -R openldap:openldap /var/lib/ldap/*
+	return 0
+}
+
 ## parse command line
 while getopts hc: o
 do
@@ -61,6 +89,8 @@ do
 			exit ;;
 		c)
 			config_file="$OPTARG" ;;
+		r)
+			restore="true" ;;
 	esac
 done
 shift $(($OPTIND-1))
@@ -79,17 +109,13 @@ do
 	[ ${config_value} == '' ] && { printf '>> fatal: config variable %s is unset!' "${var}"; exit 1; }
 done
 
-[ -d "${backup_path}" ] || { printf '>> info: backup path %s does not exist, creating...\n' "${backup_path}"; mkdir -p "${backup_path}"; }
 is_bin service || exit 1
 is_bin slapcat || exit 1
 
-## slapd backup
-# backup routine: we perform a backup regardless of the git repo status
-service slapd stop >/dev/null
-trap "service slapd start >/dev/null" EXIT
-pgrep -lf $(which slapd) >/dev/null && { printf '>> fatal: could not stop slapd, unable to perform backup\n'; exit 1; }
-
-slapcat > "${backup_path}/${backup_filename}"
+if [ "${restore}" != "true" ]; then
+	[ -d "${backup_path}" ] || { printf '>> info: backup path %s does not exist, creating...\n' "${backup_path}"; mkdir -p "${backup_path}"; }
+	slapd_backup
+fi
 
 ## setup git repo
 export GIT_WORK_TREE="${backup_path}"
@@ -97,7 +123,21 @@ export GIT_DIR="${GIT_WORK_TREE}/.git"
 
 if [ ! -d "${GIT_DIR}" ]; then
     printf '>> info: %s does not seem to be a git repo, initializing\n' "${GIT_WORK_TREE}"
-    cd ${GIT_WORK_TREE} && git init .
+	if [ "${restore}" != "true" ]
+	then
+		cd ${GIT_WORK_TREE} && git init .
+	elif [ "${restore}" == "true" ]
+	then
+		[ "${git_remote_origin}" == "" ] && { printf '>> fatal: git_remote_origin needs to be set in restore mode'; exit 1; }
+		repo_base_path=${GIT_WORK_TREE%/*}
+		repo_name=${GIT_WORK_TREE##*/}
+		( cd "${repo_base_path}" && git clone "${git_remote_origin}" "${repo_name}" )
+	fi
+fi
+
+if [ "${restore}" == "true" ]; then
+	slapd_restore
+	exit $?
 fi
 
 git add "${backup_filename}"
