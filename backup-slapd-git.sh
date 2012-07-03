@@ -39,7 +39,6 @@ Hints:
   * Distribute script with puppet, write config file using puppet 
     template. Realize slapd node names in cgit frontend node config.
 
-
 EOF
 }
 
@@ -89,7 +88,7 @@ export GIT_WORK_TREE="${backup_path}"
 export GIT_DIR="${GIT_WORK_TREE}/.git"
 
 if [ ! -d "${GIT_DIR}" ]; then
-	printf '>> info: %s does not seem to be a git repo, initializing\n' "${GIT_WORK_TREE}"
+    printf '>> info: %s does not seem to be a git repo, initializing\n' "${GIT_WORK_TREE}"
     cd ${GIT_WORK_TREE} && git init .
 fi
 
