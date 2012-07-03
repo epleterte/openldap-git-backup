@@ -107,17 +107,13 @@ do
 	[ ${config_value} == '' ] && { printf '>> fatal: config variable %s is unset!' "${var}"; exit 1; }
 done
 
-[ -d "${backup_path}" ] || { printf '>> info: backup path %s does not exist, creating...\n' "${backup_path}"; mkdir -p "${backup_path}"; }
 is_bin service || exit 1
 is_bin slapcat || exit 1
 
-## slapd backup
-# backup routine: we perform a backup regardless of the git repo status
-service slapd stop >/dev/null
-trap "service slapd start >/dev/null" EXIT
-pgrep -lf $(which slapd) >/dev/null && { printf '>> fatal: could not stop slapd, unable to perform backup\n'; exit 1; }
-
-slapcat > "${backup_path}/${backup_filename}"
+if [ "${restore}" != "true" ]; then
+	[ -d "${backup_path}" ] || { printf '>> info: backup path %s does not exist, creating...\n' "${backup_path}"; mkdir -p "${backup_path}"; }
+	slapd_backup
+fi
 
 ## setup git repo
 export GIT_WORK_TREE="${backup_path}"
