@@ -1,0 +1,5 @@
+todo:
+    * example cron job
+    * testing-testing, some parts of the script may still be untested?
+    * proper installation notes
+    * puppet module? gitolite-interaction? automatic cgit config via puppet?
