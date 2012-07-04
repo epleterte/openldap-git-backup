@@ -73,6 +73,11 @@ function slapd_restore() {
 	## this is destructive
 	is_bin slapadd || exit 1
 	slapd_stop || exit 1
+<<<<<<< HEAD
+=======
+	#slapd
+	#cd $1 
+>>>>>>> 7e096b5f7f9714ad4eb7b423e460e61c5421f0e9
 	[ -f "${backup_path}/${backup_filename}" ] || { printf '>> no ldif to restore in: %s' "${backup_path}/${backup_filename}"; return 1; }
 	rm -rf /var/lib/ldap/*
 	slapadd -l "${backup_path}/${backup_filename}"
