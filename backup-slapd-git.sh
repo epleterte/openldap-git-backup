@@ -81,7 +81,7 @@ function slapd_restore() {
 }
 
 ## parse command line
-while getopts hc: o
+while getopts hc:r o
 do
 	case $o in
 		h)
