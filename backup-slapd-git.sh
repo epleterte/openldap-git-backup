@@ -16,6 +16,7 @@ backup_path="/srv/backup/ldap"
 backup_filename="ldaptree.ldif"
 git_remote_origin=""
 restore="false"
+slapd_db_path="/var/lib/ldap/"
 config_file=/etc/slapd-git-backup.cfg
 
 ## functions
@@ -74,9 +75,10 @@ function slapd_restore() {
 	is_bin slapadd || exit 1
 	slapd_stop || exit 1
 	[ -f "${backup_path}/${backup_filename}" ] || { printf '>> no ldif to restore in: %s' "${backup_path}/${backup_filename}"; return 1; }
-	rm -rf /var/lib/ldap/*
+	# XXX: this is dangerous, should do some sanity checking.
+	rm -rf ${slapd_db_path}/*
 	slapadd -l "${backup_path}/${backup_filename}"
-	chown -R openldap:openldap /var/lib/ldap/*
+	chown -R openldap:openldap ${slapd_db_path}/*
 	return 0
 }
 
