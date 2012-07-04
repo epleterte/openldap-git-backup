@@ -29,11 +29,13 @@ Usage: ${0} [-h|-c <config file>]
 	-h		This helpful text.
 	-c		Pass alternative config file. 
 	        Defaults to ${config_file}
+	-r		Restore mode.
 
-Example config file:
+Example config file (defaults):
   # cat /etc/slapd-git-backup.cfg
-backup_path="/srv/backup/ldap"
-backup_filename="ldaptree.ldif"
+restore="$(restore)"
+backup_path="${backup_path}"
+backup_filename="${backup_filename}"
 git_remote_origin="git@githost:ldaptree.git"
 
 Example Usage:
