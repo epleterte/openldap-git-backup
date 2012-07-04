@@ -33,7 +33,7 @@ Usage: ${0} [-h|-c <config file>]
 
 Example config file (defaults):
   # cat /etc/slapd-git-backup.cfg
-restore="$(restore)"
+restore="${restore}"
 backup_path="${backup_path}"
 backup_filename="${backup_filename}"
 git_remote_origin="git@githost:ldaptree.git"
